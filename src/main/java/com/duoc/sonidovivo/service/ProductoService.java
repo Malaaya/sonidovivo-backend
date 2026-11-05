@@ -2,15 +2,14 @@ package com.duoc.sonidovivo.service;
 
 import com.duoc.sonidovivo.dto.ProductoRequest;
 import com.duoc.sonidovivo.dto.ProductoResponse;
-import com.duoc.sonidovivo.exception.ConflictoException;
-import com.duoc.sonidovivo.exception.RecursoNoEncontradoException;
-import com.duoc.sonidovivo.exception.ReglaNegocioException;
+import com.duoc.sonidovivo.exception.ApiException;
 import com.duoc.sonidovivo.model.Categoria;
 import com.duoc.sonidovivo.model.Producto;
 import com.duoc.sonidovivo.repository.CategoriaRepository;
 import com.duoc.sonidovivo.repository.ProductoRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,7 +36,7 @@ public class ProductoService {
     public ProductoResponse crear(ProductoRequest request) {
         String codigo = request.codigo().trim();
         if (productoRepository.existsByCodigo(codigo)) {
-            throw new ConflictoException("Ya existe un producto con el código " + codigo);
+            throw new ApiException(HttpStatus.CONFLICT, "Ya existe un producto con el código " + codigo);
         }
         Producto producto = new Producto();
         aplicar(producto, request);
@@ -49,7 +48,7 @@ public class ProductoService {
         Producto producto = buscar(id);
         String codigo = request.codigo().trim();
         if (productoRepository.existsByCodigoAndIdNot(codigo, id)) {
-            throw new ConflictoException("Ya existe otro producto con el código " + codigo);
+            throw new ApiException(HttpStatus.CONFLICT, "Ya existe otro producto con el código " + codigo);
         }
         aplicar(producto, request);
         return ProductoResponse.desde(producto);
@@ -64,7 +63,7 @@ public class ProductoService {
 
     private void aplicar(Producto producto, ProductoRequest request) {
         Categoria categoria = categoriaRepository.findById(request.categoriaId())
-                .orElseThrow(() -> new ReglaNegocioException("La categoría indicada no existe"));
+                .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "La categoría indicada no existe"));
         producto.setCodigo(request.codigo().trim());
         producto.setNombre(request.nombre().trim());
         producto.setMarca(request.marca().trim());
@@ -78,6 +77,7 @@ public class ProductoService {
 
     private Producto buscar(Long id) {
         return productoRepository.findById(id)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Producto no encontrado con id " + id));
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND,
+                        "Producto no encontrado con id " + id));
     }
 }

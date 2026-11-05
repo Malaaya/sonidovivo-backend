@@ -6,6 +6,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -14,19 +15,14 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(RecursoNoEncontradoException.class)
-    public ResponseEntity<ErrorApi> noEncontrado(RecursoNoEncontradoException ex) {
-        return responder(HttpStatus.NOT_FOUND, ex.getMessage(), null);
+    @ExceptionHandler(ApiException.class)
+    public ResponseEntity<ErrorApi> api(ApiException ex) {
+        return responder(ex.getStatus(), ex.getMessage(), null);
     }
 
-    @ExceptionHandler(ConflictoException.class)
-    public ResponseEntity<ErrorApi> conflicto(ConflictoException ex) {
-        return responder(HttpStatus.CONFLICT, ex.getMessage(), null);
-    }
-
-    @ExceptionHandler(ReglaNegocioException.class)
-    public ResponseEntity<ErrorApi> reglaNegocio(ReglaNegocioException ex) {
-        return responder(HttpStatus.BAD_REQUEST, ex.getMessage(), null);
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ErrorApi> autenticacion(AuthenticationException ex) {
+        return responder(HttpStatus.UNAUTHORIZED, "Credenciales inválidas", null);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
