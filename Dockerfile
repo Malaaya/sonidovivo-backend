@@ -10,5 +10,5 @@ RUN mvn -q -B clean package -DskipTests
 FROM eclipse-temurin:21-jre
 WORKDIR /app
 COPY --from=build /src/target/sonidovivo-0.0.1-SNAPSHOT.jar app.jar
-EXPOSE 8080
+EXPOSE 8081
 ENTRYPOINT ["java", "-Xmx512m", "-jar", "app.jar"]
